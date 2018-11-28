@@ -2,13 +2,16 @@ import React, { Component } from 'react'
 import { View, StatusBar } from 'react-native'
 import ReduxNavigation from '../Navigation/ReduxNavigation'
 import { connect } from 'react-redux'
+import BluetoothActions, { BluetoothSelectors } from '../Redux/BluetoothRedux'
 
 // Styles
 import styles from './Styles/RootContainerStyles'
 
 class RootContainer extends Component {
   componentDidMount () {
-    // TODO: add onStateChange for BLE
+    this.props.bleManager.onStateChange((state) => {
+      this.props.setControllerState(state)
+    }, true)
   }
 
   render () {
@@ -21,8 +24,12 @@ class RootContainer extends Component {
   }
 }
 
-// wraps dispatch to create nicer functions to call within our component
-const mapDispatchToProps = (dispatch) => ({
+const mapStateToProps = (state) => ({
+  bleManager: BluetoothSelectors.getManager(state)
 })
 
-export default connect(null, mapDispatchToProps)(RootContainer)
+const mapDispatchToProps = (dispatch) => ({
+  setControllerState: (newState) => dispatch(BluetoothActions.setControllerState(newState))
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(RootContainer)

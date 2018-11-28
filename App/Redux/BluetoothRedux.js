@@ -34,16 +34,13 @@ export const INITIAL_STATE = Immutable({
 /* ------------- Selectors ------------- */
 
 export const BluetoothSelectors = {
-  getManager: state => bleManager,
+  getManager: (state) => bleManager,
   getControllerState: state => state.bluetooth.controllerState,
-  getScannedDevices: state => state.bluetooth.scannedDevices
+  getScannedDevices: state => state.bluetooth.scannedDevices,
+  getConnectedDevice: state => state.bluetooth.connectedDevice
 }
 
 /* ------------- Reducers ------------- */
-
-// request the avatar for a user
-// export const request = (state, { username }) =>
-//   state.merge({ fetching: true, username, avatar: null })
 
 export const setControllerState = (state, { newState }) =>
   state.merge({ controllerState: newState })
