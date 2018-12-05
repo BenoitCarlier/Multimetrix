@@ -2,7 +2,10 @@ import React, { Component } from 'react'
 import { FlatList, Text, TouchableOpacity, View } from 'react-native'
 import { connect } from 'react-redux'
 import { Buffer } from 'buffer'
+import BleItem from '../Components/bleItem'
 import BluetoothActions, { BluetoothSelectors, BluetoothState } from '../Redux/BluetoothRedux'
+
+import styles from './Styles/ConnectionScreenStyle'
 
 class ConnectionScreen extends Component {
   constructor (props) {
@@ -72,14 +75,10 @@ class ConnectionScreen extends Component {
       })
   }
 
-  renderItem ({ item }) {
+  renderItem ({ item, index }) {
     return (
       <TouchableOpacity onPress={() => this.onDeviceFoundPressed(item.id)}>
-        <View>
-          <Text>
-            {item.id}
-          </Text>
-        </View>
+        <BleItem device={item} last={index === this.props.scannedDevices.length - 1}/>
       </TouchableOpacity>
     )
   }
@@ -88,8 +87,11 @@ class ConnectionScreen extends Component {
     return (
       <View>
         {this.state.loading &&
-          <Text>LOADING</Text>
+        <Text>LOADING</Text>
         }
+        <Text style={styles.scanTitle}>
+          Scan BLE Actif
+        </Text>
 
         <FlatList
           data={this.props.scannedDevices}

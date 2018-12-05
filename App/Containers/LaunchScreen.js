@@ -59,16 +59,15 @@ class LaunchScreen extends Component {
 
     if (this.props.connectedDevice === null) {
       return (
-        <View style={{ width: 130 }}>
-          <Icon.Button name={'bluetooth'} size={20} onPress={this.onConnectPressed}>
+          <Icon.Button name={'bluetooth'} size={20} onPress={this.onConnectPressed} iconStyle={styles.btButton}>
             Se connecter
           </Icon.Button>
-        </View>
       )
     } else {
       return (
-        <View style={{ width: 150 }}>
-          <Icon.Button name={'bluetooth'} size={20} onPress={this.onDisconnectPressed}>
+        <View>
+          <Text style={styles.nameDeviceConnected}>Connecté à {this.props.connectedDevice}</Text>
+          <Icon.Button name={'bluetooth'} size={20} onPress={this.onDisconnectPressed} iconStyle={styles.btButton}>
             Se déconnecter
           </Icon.Button>
         </View>
@@ -79,27 +78,21 @@ class LaunchScreen extends Component {
   render () {
     return (
       <View style={styles.mainContainer}>
-        <ScrollView style={styles.container}>
 
-          <View>
-            <Text>Multimetrix</Text>
-          </View>
+        <Text style={styles.AppTitleStyle}>Multimetrix</Text>
 
-          {this.state.loading &&
-          <View>
-            <Text>LOADING</Text>
-          </View>
-          }
+        {this.state.loading &&
+        <Text>LOADING</Text>
+        }
 
-          {this.displayConnectionButton()}
-
-          <View style={styles.section}>
-            <Text style={{ fontFamily: 'SevenSegmentRegular', fontSize: 90, color: '#000000' }}>
-              {this.props.valueRead || '-'}
-            </Text>
-          </View>
-
-        </ScrollView>
+        {this.displayConnectionButton()}
+        <View>
+        <Text style={styles.digitStyle}>
+          {this.props.valueRead || '____'}
+        </Text>
+          <Text style={styles.littleDigitStyle}> mV </Text>
+        </View>
+        <Text style={styles.authors}> By Alexis A, Clément P and Benoit CG </Text>
       </View>
     )
   }
