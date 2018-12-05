@@ -1,28 +1,16 @@
 import React, { Component } from 'react'
-import { Alert, View, StatusBar } from 'react-native'
+import { Alert, View, StatusBar, ActivityIndicator } from 'react-native'
 import ReduxNavigation from '../Navigation/ReduxNavigation'
 import { connect } from 'react-redux'
 import BluetoothActions, { BluetoothSelectors } from '../Redux/BluetoothRedux'
+import { LoadingSelectors } from '../Redux/LoadingRedux'
 
 // Styles
 import styles from './Styles/RootContainerStyles'
 
 class RootContainer extends Component {
-  async componentDidMount () {
-    this.props.bleManager.onStateChange((state) => {
-      this.props.setControllerState(state)
-    }, true)
-
-    let connectedDevices = await this.props.bleManager.connectedDevices([]) // TODO: mettre service UUID
-
-    if (connectedDevices.length > 0) {
-      // TODO: gerer les connexions multiples
-      if (connectedDevices.length === 1) {
-        this.props.setConnectedDevice(connectedDevices[0])
-      } else {
-        console.log("Ne gère pas les connexions multiples pour l'instant")
-      }
-    }
+  componentDidMount () {
+    this.props.initBluetooth()
   }
 
   componentDidUpdate (prevProps) {
@@ -36,19 +24,25 @@ class RootContainer extends Component {
       <View style={styles.applicationView}>
         <StatusBar barStyle='light-content' />
         <ReduxNavigation />
+
+        {this.props.isLoading &&
+          <View style={styles.loader}>
+            <ActivityIndicator size='large' />
+          </View>
+        }
+
       </View>
     )
   }
 }
 
 const mapStateToProps = (state) => ({
-  bleManager: BluetoothSelectors.getManager(state),
-  error: BluetoothSelectors.getError(state)
+  error: BluetoothSelectors.getError(state),
+  isLoading: LoadingSelectors.isLoading(state)
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  setControllerState: (newState) => dispatch(BluetoothActions.setControllerState(newState)),
-  setConnectedDevice: (connectedDevice) => dispatch(BluetoothActions.setConnectedDevice(connectedDevice))
+  initBluetooth: () => dispatch(BluetoothActions.init())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(RootContainer)

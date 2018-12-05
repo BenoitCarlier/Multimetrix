@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import { ScrollView, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 import connect from 'react-redux/es/connect/connect'
 import { State as ControllerState } from 'react-native-ble-plx'
-import BluetoothActions, { BluetoothSelectors } from '../Redux/BluetoothRedux'
+import BluetoothActions, { BluetoothSelectors, BluetoothState } from '../Redux/BluetoothRedux'
 import Icon from 'react-native-vector-icons/FontAwesome'
 
 // Styles
@@ -12,22 +12,9 @@ class LaunchScreen extends Component {
   constructor (props) {
     super(props)
 
-    this.state = {
-      loading: false
-    }
-
     this.displayConnectionButton = this.displayConnectionButton.bind(this)
     this.onConnectPressed = this.onConnectPressed.bind(this)
     this.onDisconnectPressed = this.onDisconnectPressed.bind(this)
-  }
-
-  static getDerivedStateFromProps (props, currentState) {
-    if (props.isBluetoothLoading !== currentState.loading) {
-      return {
-        loading: props.isBluetoothLoading || currentState.loading
-      }
-    }
-    return null
   }
 
   async onConnectPressed () {
@@ -37,38 +24,28 @@ class LaunchScreen extends Component {
     this.props.navigation.navigate('ConnectionScreen')
   }
 
-  async onDisconnectPressed () {
-    this.setState({
-      loading: true
-    })
-
-    if (this.props.connectedDevice !== null) {
-      // TODO: stop reading value before disconnecting
-      await this.props.bleManager.cancelDeviceConnection(this.props.connectedDevice.id)
-      this.props.setConnectedDevice(null)
-      this.setState({
-        loading: false
-      })
-    }
+  onDisconnectPressed () {
+    this.props.disconnect()
   }
 
   displayConnectionButton () {
-    if (this.state.loading) {
-      return null
-    }
-
-    if (this.props.connectedDevice === null) {
+    console.log('displayConnectionButton', this.props.bluetoothState)
+    if (this.props.bluetoothState === BluetoothState.Connected) {
       return (
-          <Icon.Button name={'bluetooth'} size={20} onPress={this.onConnectPressed} iconStyle={styles.btButton}>
-            Se connecter
-          </Icon.Button>
+        <View style={{alignItems: 'center'}}>
+          <Text style={styles.nameDeviceConnected}>Connecté à {this.props.connectedDevice.id}</Text>
+          <View style={styles.btDisconnectButton}>
+            <Icon.Button name={'bluetooth'} size={20} onPress={this.onDisconnectPressed} iconStyle={styles.btButtonIcon}>
+              Se déconnecter
+            </Icon.Button>
+          </View>
+        </View>
       )
     } else {
       return (
-        <View>
-          <Text style={styles.nameDeviceConnected}>Connecté à {this.props.connectedDevice}</Text>
-          <Icon.Button name={'bluetooth'} size={20} onPress={this.onDisconnectPressed} iconStyle={styles.btButton}>
-            Se déconnecter
+        <View style={styles.btConnectButton}>
+          <Icon.Button name={'bluetooth'} size={20} onPress={this.onConnectPressed} iconStyle={styles.btButtonIcon}>
+            Se connecter
           </Icon.Button>
         </View>
       )
@@ -81,18 +58,17 @@ class LaunchScreen extends Component {
 
         <Text style={styles.AppTitleStyle}>Multimetrix</Text>
 
-        {this.state.loading &&
-        <Text>LOADING</Text>
-        }
-
         {this.displayConnectionButton()}
+
         <View>
-        <Text style={styles.digitStyle}>
-          {this.props.valueRead || '____'}
-        </Text>
+          <Text style={styles.digitStyle}>
+            {this.props.value !== null ? this.props.value : '____'}
+          </Text>
           <Text style={styles.littleDigitStyle}> mV </Text>
         </View>
-        <Text style={styles.authors}> By Alexis A, Clément P and Benoit CG </Text>
+
+        <Text style={styles.authors}> By Alexis A., Clément P. and Benoit C.G. </Text>
+
       </View>
     )
   }
@@ -100,15 +76,14 @@ class LaunchScreen extends Component {
 
 const mapStateToProps = (state) => ({
   bleManager: BluetoothSelectors.getManager(state),
-  connectedDevice: BluetoothSelectors.getConnectedDevice(state),
   controllerState: BluetoothSelectors.getControllerState(state),
   bluetoothState: BluetoothSelectors.getBluetoothState(state),
-  isBluetoothLoading: BluetoothSelectors.isLoading(state),
-  valueRead: BluetoothSelectors.getValueRead(state)
+  connectedDevice: BluetoothSelectors.getConnectedDevice(state),
+  value: BluetoothSelectors.getValue(state)
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  setConnectedDevice: (connectedDevice) => dispatch(BluetoothActions.setConnectedDevice(connectedDevice))
+  disconnect: () => dispatch(BluetoothActions.disconnect())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(LaunchScreen)

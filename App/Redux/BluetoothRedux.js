@@ -5,13 +5,20 @@ import { BleManager, State as ControllerState } from 'react-native-ble-plx'
 /* ------------- Types and Action Creators ------------- */
 
 const { Types, Creators } = createActions({
+  init: null,
+  onInitDone: null,
   setControllerState: ['newState'],
-  setConnectedDevice: ['connectedDevice'],
-  setValueRead: ['newValue'],
+  setConnectedDevice: ['newDevice'],
+  onValueReceived: ['newValue'],
   startScan: null,
   stopScan: null,
   onDeviceFound: ['deviceFound'],
   onScanStopped: null,
+  connect: ['deviceId', 'onConnectedCallback'],
+  onConnected: ['connectedDevice'],
+  disconnect: null,
+  onDisconnected: null,
+  subscribeNotification: ['device'],
   onError: ['error']
 })
 
@@ -21,17 +28,19 @@ export default Creators
 /* ------------- Initial State ------------- */
 
 export const BluetoothState = {
+  Initializing: 'Initializing',
   Scanning: 'Scanning',
   StoppingScan: 'StoppingScan',
   Idle: 'Idle',
   Connecting: 'Connecting',
-  Connected: 'Connected'
+  Connected: 'Connected',
+  Disconnecting: 'Disconnecting'
 }
 
 const bleManager = new BleManager()
 
 export const INITIAL_STATE = Immutable({
-  valueRead: null,
+  value: null,
   scannedDevices: {},
   connectedDevice: null,
   bluetoothState: BluetoothState.Idle,
@@ -44,36 +53,31 @@ export const INITIAL_STATE = Immutable({
 export const BluetoothSelectors = {
   getManager: (state) => bleManager,
   getError: (state) => state.bluetooth.error,
-  getValueRead: (state) => state.bluetooth.valueRead,
+  getValue: (state) => state.bluetooth.value,
   getBluetoothState: state => state.bluetooth.bluetoothState,
   getControllerState: state => state.bluetooth.controllerState,
   getScannedDevices: state => Object.values(state.bluetooth.scannedDevices),
-  getConnectedDevice: state => state.bluetooth.connectedDevice,
-  isLoading: state => [BluetoothState.StoppingScan, BluetoothState.Connecting].includes(state.bluetooth.bluetoothState)
+  getConnectedDevice: state => state.bluetooth.connectedDevice
 }
 
 /* ------------- Reducers ------------- */
 
+export const init = (state) =>
+  state.merge({ bluetoothState: BluetoothState.Initializing })
+
+export const onInitDone = (state) => {
+  console.log('onInitDone')
+  return state.merge({ bluetoothState: BluetoothState.Idle })
+}
+
 export const setControllerState = (state, { newState }) =>
   state.merge({ controllerState: newState })
 
-export const setValueRead = (state, { newValue }) => {
-  console.log(newValue)
-  return state.merge({ valueRead: newValue })
-}
+export const setConnectedDevice = (state, { newDevice }) =>
+  state.merge({ connectedDevice: newDevice })
 
-export const setConnectedDevice = (state, { connectedDevice }) => {
-  if (connectedDevice !== null) {
-    return state.merge({
-      connectedDevice: {
-        id: connectedDevice.id,
-        name: connectedDevice.name
-      }
-    })
-  } else {
-    return state.merge({ connectedDevice: null, valueRead: null })
-  }
-}
+export const setValue = (state, { newValue }) =>
+  state.merge({ value: newValue })
 
 export const startScan = (state) =>
   state.merge({ bluetoothState: BluetoothState.Scanning, scannedDevices: [] })
@@ -81,8 +85,10 @@ export const startScan = (state) =>
 export const stopScan = (state) =>
   state.merge({ bluetoothState: BluetoothState.StoppingScan })
 
-export const onScanStopped = (state) =>
-  state.merge({ bluetoothState: BluetoothState.Idle })
+export const onScanStopped = (state) => {
+  console.log('onScanStopped')  // TODO: fix bug "Se connecter" après connexion, déconnexion, reconnexion (problème de BluetoothState)
+  return state.merge({ bluetoothState: BluetoothState.Idle })
+}
 
 export const onDeviceFound = (state, { deviceFound }) =>
   state.merge({
@@ -95,6 +101,29 @@ export const onDeviceFound = (state, { deviceFound }) =>
     }
   })
 
+export const connect = (state) =>
+  state.merge({ bluetoothState: BluetoothState.Connecting })
+
+export const onConnected = (state, { connectedDevice }) => {
+  console.log('onConnected')
+  return state.merge({
+    bluetoothState: BluetoothState.Connected,
+    connectedDevice: {
+      id: connectedDevice.id,
+      name: connectedDevice.name
+    },
+    scannedDevices: []
+  })
+}
+
+export const disconnect = (state) =>
+  state.merge({ bluetoothState: BluetoothState.Disconnecting })
+
+export const onDisconnected = (state) => {
+  console.log('onDisconnected')
+  return state.merge({ bluetoothState: BluetoothState.Idle, connectedDevice: null, value: null })
+}
+
 export const onError = (state, { error }) => {
   console.log('ERROR', error)
   return state.merge({ bluetoothState: BluetoothState.Idle, error: error })
@@ -103,12 +132,18 @@ export const onError = (state, { error }) => {
 /* ------------- Hookup Reducers To Types ------------- */
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [Types.SET_CONTROLLER_STATE]: setControllerState,
+  [Types.INIT]: init,
+  [Types.ON_INIT_DONE]: onInitDone,
   [Types.SET_CONNECTED_DEVICE]: setConnectedDevice,
-  [Types.SET_VALUE_READ]: setValueRead,
+  [Types.SET_CONTROLLER_STATE]: setControllerState,
+  [Types.ON_VALUE_RECEIVED]: setValue,
   [Types.START_SCAN]: startScan,
   [Types.STOP_SCAN]: stopScan,
-  [Types.ON_ERROR]: onError,
   [Types.ON_DEVICE_FOUND]: onDeviceFound,
-  [Types.ON_SCAN_STOPPED]: onScanStopped
+  [Types.ON_SCAN_STOPPED]: onScanStopped,
+  [Types.CONNECT]: connect,
+  [Types.ON_CONNECTED]: onConnected,
+  [Types.DISCONNECT]: disconnect,
+  [Types.ON_DISCONNECTED]: onDisconnected,
+  [Types.ON_ERROR]: onError
 })

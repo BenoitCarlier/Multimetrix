@@ -15,8 +15,14 @@ export default StyleSheet.create({
   centered: {
     alignItems: 'center'
   },
-  btButton: {
-    width: 60
+  btConnectButton: {
+    width: 150
+  },
+  btDisconnectButton: {
+    width: 170
+  },
+  btButtonIcon: {
+    marginRight: 20
   },
   AppTitleStyle: {
     fontSize: 30,
@@ -45,7 +51,7 @@ export default StyleSheet.create({
     textAlign: 'center'
   },
   nameDeviceConnected: {
-    fontSize: 22,
+    fontSize: 18,
     color: '#59644e'
   }
 })

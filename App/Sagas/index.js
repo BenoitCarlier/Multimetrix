@@ -9,7 +9,7 @@ import { BluetoothTypes } from '../Redux/BluetoothRedux'
 
 /* ------------- Sagas ------------- */
 
-import { scanDevices } from './BluetoothSagas'
+import { connectDevice, disconnectDevice, initBluetooth, receiveNotification, scanDevices } from './BluetoothSagas'
 
 /* ------------- API ------------- */
 
@@ -21,6 +21,10 @@ import { scanDevices } from './BluetoothSagas'
 
 export default function * root () {
   yield all([
-    takeLatest(BluetoothTypes.START_SCAN, scanDevices)
+    takeLatest(BluetoothTypes.START_SCAN, scanDevices),
+    takeLatest(BluetoothTypes.INIT, initBluetooth),
+    takeLatest(BluetoothTypes.CONNECT, connectDevice),
+    takeLatest(BluetoothTypes.DISCONNECT, disconnectDevice),
+    takeLatest(BluetoothTypes.SUBSCRIBE_NOTIFICATION, receiveNotification)
   ])
 }

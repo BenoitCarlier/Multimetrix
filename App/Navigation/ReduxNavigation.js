@@ -3,6 +3,7 @@ import { BackHandler, Platform } from 'react-native'
 import { addNavigationHelpers } from 'react-navigation'
 import { createReduxBoundAddListener } from 'react-navigation-redux-helpers'
 import { connect } from 'react-redux'
+import { LoadingSelectors } from '../Redux/LoadingRedux'
 import AppNavigation from './AppNavigation'
 
 class ReduxNavigation extends React.Component {
@@ -15,7 +16,9 @@ class ReduxNavigation extends React.Component {
         return false
       }
       // if (shouldCloseApp(nav)) return false
-      dispatch({ type: 'Navigation/BACK' })
+      if (this.props.backEnabled) {
+        dispatch({ type: 'Navigation/BACK' })
+      }
       return true
     })
   }
@@ -30,5 +33,5 @@ class ReduxNavigation extends React.Component {
   }
 }
 
-const mapStateToProps = state => ({ nav: state.nav })
+const mapStateToProps = state => ({ nav: state.nav, backEnabled: !LoadingSelectors.isLoading(state) })
 export default connect(mapStateToProps)(ReduxNavigation)
