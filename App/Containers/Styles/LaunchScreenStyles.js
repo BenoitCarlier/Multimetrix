@@ -53,5 +53,13 @@ export default StyleSheet.create({
   nameDeviceConnected: {
     fontSize: 18,
     color: '#59644e'
+  },
+  valuesChart: {
+    marginTop: 10,
+    height: 200,
+    width: '80%',
+    minWidth: 200,
+    borderWidth: 1,
+    borderColor: 'black'
   }
 })

@@ -68,6 +68,8 @@ export function * connectDevice (action) {
       throw new Error("Le contrôleur Bluetooth n'est pas allumé")
     }
 
+    yield put(BluetoothActions.stopScan())
+
     const bleManager = yield select(BluetoothSelectors.getManager)
     const { deviceId, onConnectedCallback } = action
     console.log('CONNECTING TO ', deviceId)

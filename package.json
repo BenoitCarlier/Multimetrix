@@ -37,6 +37,8 @@
     "react-native-ble-plx": "^1.0.0",
     "react-native-config": "^0.10.0",
     "react-native-device-info": "^0.11.0",
+    "react-native-svg": "^8.0.8",
+    "react-native-svg-charts": "^5.2.0",
     "react-native-vector-icons": "^4.3.0",
     "react-navigation": "^1.0.0-beta.11",
     "react-navigation-redux-helpers": "^1.0.4",

@@ -40,7 +40,7 @@ export const BluetoothState = {
 const bleManager = new BleManager()
 
 export const INITIAL_STATE = Immutable({
-  value: null,
+  values: null,
   numMaxValues: 10,
   scannedDevices: {},
   connectedDevice: null,
@@ -54,7 +54,8 @@ export const INITIAL_STATE = Immutable({
 export const BluetoothSelectors = {
   getManager: (state) => bleManager,
   getError: (state) => state.bluetooth.error,
-  getValue: (state) => state.bluetooth.value !== null ? state.bluetooth.value[state.bluetooth.value.length - 1] : null,
+  getLastValue: (state) => state.bluetooth.values !== null ? state.bluetooth.values[state.bluetooth.values.length - 1] : null,
+  getValues: (state) => state.bluetooth.values,
   getBluetoothState: state => state.bluetooth.bluetoothState,
   getControllerState: state => state.bluetooth.controllerState,
   getScannedDevices: state => Object.values(state.bluetooth.scannedDevices),
@@ -75,15 +76,15 @@ export const setControllerState = (state, { newState }) =>
 export const setConnectedDevice = (state, { newDevice }) =>
   state.merge({ connectedDevice: newDevice })
 
-export const setValue = (state, { newValue }) => {
-  let value
-  if (state.value === null) {
-    value = [newValue]
+export const addValue = (state, { newValue }) => {
+  let values
+  if (state.values === null) {
+    values = [newValue]
   } else {
-    value = [...state.value, newValue].slice(-state.numMaxValues)
+    values = [...state.values, newValue].slice(-state.numMaxValues)
   }
 
-  return state.merge({ value })
+  return state.merge({ values })
 }
 
 export const startScan = (state) =>
@@ -124,10 +125,10 @@ export const onConnected = (state, { connectedDevice }) =>
   })
 
 export const disconnect = (state) =>
-  state.merge({ bluetoothState: BluetoothState.Disconnecting })
+  state.merge({ bluetoothState: BluetoothState.Disconnecting, values: null })
 
 export const onDisconnected = (state) =>
-  state.merge({ bluetoothState: BluetoothState.Idle, connectedDevice: null, value: null })
+  state.merge({ bluetoothState: BluetoothState.Idle, connectedDevice: null })
 
 export const onError = (state, { error }) => {
   console.log('ERROR', error)
@@ -141,7 +142,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   [Types.ON_INIT_DONE]: onInitDone,
   [Types.SET_CONNECTED_DEVICE]: setConnectedDevice,
   [Types.SET_CONTROLLER_STATE]: setControllerState,
-  [Types.ON_VALUE_RECEIVED]: setValue,
+  [Types.ON_VALUE_RECEIVED]: addValue,
   [Types.START_SCAN]: startScan,
   [Types.STOP_SCAN]: stopScan,
   [Types.ON_DEVICE_FOUND]: onDeviceFound,

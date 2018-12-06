@@ -18,7 +18,6 @@ class ConnectionScreen extends Component {
   }
 
   componentWillUnmount () {
-    console.log('componentWillUnmount', this.props.bluetoothState)
     if (this.props.bluetoothState === BluetoothState.Scanning) {
       this.props.stopScan()
     }
