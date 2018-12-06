@@ -97,7 +97,7 @@ export function * disconnectDevice () {
     if (connectedDevice !== null) {
       console.log('DISCONNECTING FROM ', connectedDevice.id)
 
-      // TODO: stop reading value before disconnecting
+      // TODO: stop reading value before disconnecting (ignored for now)
       yield apply(bleManager, bleManager.cancelDeviceConnection, [connectedDevice.id])
     }
 

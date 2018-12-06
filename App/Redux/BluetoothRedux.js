@@ -86,7 +86,9 @@ export const stopScan = (state) =>
   state.merge({ bluetoothState: BluetoothState.StoppingScan })
 
 export const onScanStopped = (state) => {
-  console.log('onScanStopped')  // TODO: fix bug "Se connecter" après connexion, déconnexion, reconnexion (problème de BluetoothState)
+  if (state.bluetoothState !== BluetoothState.Scanning) {
+    return state
+  }
   return state.merge({ bluetoothState: BluetoothState.Idle })
 }
 

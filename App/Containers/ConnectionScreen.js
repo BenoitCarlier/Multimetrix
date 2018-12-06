@@ -33,7 +33,7 @@ class ConnectionScreen extends Component {
 
   renderItem ({ item, index }) {
     let itemView
-    const isLast = index === this.props.scannedDevices.length
+    const isLast = index === this.props.scannedDevices.length - 1
 
     if (item.name !== null) {
       itemView = (
