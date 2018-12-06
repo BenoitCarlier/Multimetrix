@@ -41,6 +41,7 @@ const bleManager = new BleManager()
 
 export const INITIAL_STATE = Immutable({
   value: null,
+  numMaxValues: 10,
   scannedDevices: {},
   connectedDevice: null,
   bluetoothState: BluetoothState.Idle,
@@ -53,7 +54,7 @@ export const INITIAL_STATE = Immutable({
 export const BluetoothSelectors = {
   getManager: (state) => bleManager,
   getError: (state) => state.bluetooth.error,
-  getValue: (state) => state.bluetooth.value,
+  getValue: (state) => state.bluetooth.value !== null ? state.bluetooth.value[state.bluetooth.value.length - 1] : null,
   getBluetoothState: state => state.bluetooth.bluetoothState,
   getControllerState: state => state.bluetooth.controllerState,
   getScannedDevices: state => Object.values(state.bluetooth.scannedDevices),
@@ -65,10 +66,8 @@ export const BluetoothSelectors = {
 export const init = (state) =>
   state.merge({ bluetoothState: BluetoothState.Initializing })
 
-export const onInitDone = (state) => {
-  console.log('onInitDone')
-  return state.merge({ bluetoothState: BluetoothState.Idle })
-}
+export const onInitDone = (state) =>
+  state.merge({ bluetoothState: BluetoothState.Idle })
 
 export const setControllerState = (state, { newState }) =>
   state.merge({ controllerState: newState })
@@ -76,8 +75,16 @@ export const setControllerState = (state, { newState }) =>
 export const setConnectedDevice = (state, { newDevice }) =>
   state.merge({ connectedDevice: newDevice })
 
-export const setValue = (state, { newValue }) =>
-  state.merge({ value: newValue })
+export const setValue = (state, { newValue }) => {
+  let value
+  if (state.value === null) {
+    value = [newValue]
+  } else {
+    value = [...state.value, newValue].slice(-state.numMaxValues)
+  }
+
+  return state.merge({ value })
+}
 
 export const startScan = (state) =>
   state.merge({ bluetoothState: BluetoothState.Scanning, scannedDevices: [] })
@@ -106,9 +113,8 @@ export const onDeviceFound = (state, { deviceFound }) =>
 export const connect = (state) =>
   state.merge({ bluetoothState: BluetoothState.Connecting })
 
-export const onConnected = (state, { connectedDevice }) => {
-  console.log('onConnected')
-  return state.merge({
+export const onConnected = (state, { connectedDevice }) =>
+  state.merge({
     bluetoothState: BluetoothState.Connected,
     connectedDevice: {
       id: connectedDevice.id,
@@ -116,15 +122,12 @@ export const onConnected = (state, { connectedDevice }) => {
     },
     scannedDevices: []
   })
-}
 
 export const disconnect = (state) =>
   state.merge({ bluetoothState: BluetoothState.Disconnecting })
 
-export const onDisconnected = (state) => {
-  console.log('onDisconnected')
-  return state.merge({ bluetoothState: BluetoothState.Idle, connectedDevice: null, value: null })
-}
+export const onDisconnected = (state) =>
+  state.merge({ bluetoothState: BluetoothState.Idle, connectedDevice: null, value: null })
 
 export const onError = (state, { error }) => {
   console.log('ERROR', error)
